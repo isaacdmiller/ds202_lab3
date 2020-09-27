@@ -20,10 +20,38 @@ dat$HS_Level <- as.integer(dat$HS_Level)
 1. Find the average years of education for the respondents with each political party affiliation. Arrange your output in a meaningful order and print. Describe any patterns you find.
 
 ```{r}
-#question 1.
 eduParty <- aggregate(HS_Level ~ Political, dat, FUN = mean)
-eduParty %>% arrange(match(dat, c("Strong democrat", "Not str democrat", "Ind,near dem", "Independent", "Ind,near rep","Not str republican", "Strong republican",  "Other party", "No answer", "Don't know")))
-eduParty
 
+eduParty$Rank <- c(9, 3, 5, 4, 10, 2, 6, 8, 1, 7)
+
+eduParty <- eduParty[order(eduParty$Rank), ]
+colnames(eduParty) <- c("Political", "Avg_Edu", "Rank")
+
+ggplot(data = eduParty, aes(x = reorder(Political, Rank), y = Avg_Edu)) + geom_bar(stat = "identity") + xlab('Political Party Affiliation') + ylab('Average Number of Years of Education') + labs(title = "Average Years of Education by Political Party") + theme(axis.text.x = element_text(angle = 90))
 
 ```
+
+    For this problem, we arranged our output by arranging it from left to right going from most democrat to most republican and then to the other party affiliations. From what it looks like, people who are sure of their party tend to have a higher average years of education than those who didn't know or didn't answer. It also seems like subjects who fell into republican categories have a higher number of average years of education than other affiliations.
+
+2. Create a single data frame containing records for the better educated respondents in each political party affiliation. A “better educated” respondent is someone who has strictly more years of education than the median in the same party affiliation. Print the structure of the data frame.
+
+```{r}
+higherEdu <- dat
+higherEdu <- higherEdu %>% left_join(eduParty, by = "Political") %>% filter(HS_Level > Avg_Edu)
+higherEdu
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
