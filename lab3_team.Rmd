@@ -3,20 +3,114 @@ title: "Lab 3"
 author: "Patrick Wenzel, Isaac Miller, Elisabeth Balke"
 date: "9/23/2020"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## Part One
-
-```{r include=FALSE}
 library(ggplot2)
+
 library(dplyr)
+library(plyr)
 dat <- readxl::read_xls('./GSS.xls')
+str(dat)
+dat <- na.omit(dat)
+colnames(dat) <- c('Year', 'ID', 'Marital_Status', 'HS_Level', 'Gender', 'Political', 'Happy', 'Ballot_Used')
+dat$HS_Level <- as.integer(dat$HS_Level)
 ```
+
+1. Find the average years of education for the respondents with each political party affiliation. Arrange your output in a meaningful order and print. Describe any patterns you find.
 
 ```{r}
-head(dat)
+eduParty <- aggregate(HS_Level ~ Political, dat, FUN = mean)
+
+eduParty$Rank <- c(9, 3, 5, 4, 10, 2, 6, 8, 1, 7)
+
+eduParty <- eduParty[order(eduParty$Rank), ]
+colnames(eduParty) <- c("Political", "Avg_Edu", "Rank")
+
+ggplot(data = eduParty, aes(x = reorder(Political, Rank), y = Avg_Edu)) + geom_bar(stat = "identity") + xlab('Political Party Affiliation') + ylab('Average Number of Years of Education') + labs(title = "Average Years of Education by Political Party") + theme(axis.text.x = element_text(angle = 90))
+
 ```
+
+    For this problem, we arranged our output by arranging it from left to right going from most democrat to most republican and then to the other party affiliations. From what it looks like, people who are sure of their party tend to have a higher average years of education than those who didn't know or didn't answer. It also seems like subjects who fell into republican categories have a higher number of average years of education than other affiliations.
+
+2. Create a single data frame containing records for the better educated respondents in each political party affiliation. A “better educated” respondent is someone who has strictly more years of education than the median in the same party affiliation. Print the structure of the data frame.
+
+```{r}
+higherEdu <- dat %>% left_join(eduParty, by = "Political") %>% filter(HS_Level > Avg_Edu)
+higherEdu
+```
+
+3. How is the happiness of a respondent related to his/her marriage status? Define that a person is happy if the response to question is “Very happy” or “Pretty happy”.
+
+```{r}
+happyMarried <- dat %>% select(Marital_Status, Happy)
+
+happyMarried <- count(happyMarried, vars = c("Marital_Status", "Happy"))
+happyMarried <- happyMarried[order(happyMarried$freq), ]
+
+head(happyMarried)
+
+happyMarried$HappyRank <- ifelse(happyMarried$Happy == "No answer", 0, ifelse(happyMarried$Happy == "Not applicable", 1, ifelse(happyMarried$Happy == "Don't know", 2, ifelse(happyMarried$Happy == "Not too happy", 3, ifelse(happyMarried$Happy == "Pretty happy", 4, 5)))))
+
+ggplot(data = happyMarried, aes(x = reorder(paste0(Marital_Status,'-', Happy), HappyRank), y = freq)) + geom_bar(stat = "identity") + xlab('Marital Status-Happiness') + ylab('Number of Answers') + labs(title = "Happiness Level Based off of Marital Status") + theme(axis.text.x = element_text(angle = 90))
+```
+
+    For this problem, I first selected only the Marital_Status and Happy columns from the original dataset. I then used the count() function to get the number of times each unique marital status and happy combination appeared. For displaying this information numerically, I sorted this dataframe by the frequency each combination appeared to see where the happiest marital statuses are. This made me see that the happiness is related. As you can see, almost half of the respondents are the top two answers, which are both married and are either Very happy or Pretty happy. While other marital statuses do have people who are either Very happy or Pretty happy, it is clear that the most happy are the people who are married. In the graph (the labels for each tick are slightly to the right), you can see that for people who are married, there aren't many spikes in the "not happy" columns. In order to see this better, I gave each happiness a rank and then ordered them based on that.
+
+4. Does party affiliation affect the relationship you found in the last question?
+
+```{r}
+happyMarriedPol <- dat %>% select(Marital_Status, Happy, Political)
+
+happyMarriedPol <- count(happyMarriedPol, vars = c("Marital_Status", "Happy", "Political"))
+happyMarriedPol <- happyMarriedPol[order(happyMarriedPol$freq), ]
+
+happyMarriedPol$HappyRank <- ifelse(happyMarriedPol$Happy == "No answer", 0, ifelse(happyMarriedPol$Happy == "Not applicable", 1, ifelse(happyMarriedPol$Happy == "Don't know", 2, ifelse(happyMarriedPol$Happy == "Not too happy", 3, ifelse(happyMarriedPol$Happy == "Pretty happy", 4, 5)))))
+happyMarriedPol <- happyMarriedPol[order(happyMarriedPol$HappyRank), ]
+
+ggplot(happyMarriedPol, aes(fill = Happy, x = Marital_Status)) + geom_bar(position = 'fill') + facet_wrap('Political') + theme(axis.text.x = element_text(angle = 90))
+```
+
+    For this problem, I first selected only the Marital_Status, Happy, and Political columns from the original dataset. I then used the count() function to get the number of times each unique marital status, happy, and political party affiliation combination appeared. For displaying this information numerically, I sorted this dataframe by the happiness ranking for each combination appeared to see where the happiest marital statuses and political affiliations are. This made me see that the happiness and marital status and political affiliation are not related. As you can see, there is a very good mix of marital statuses, political affiliations, and happinesses in each happiness category. In the graph (the labels for each tick are slightly to the right), you can see that the distribution of the hapiness categories are pretty well spread out as well and are pretty even amongst different marital statuses.
+    
+5. How is marital status related to the education of a respondent? What are possible reasons accounting for the patterns you see?
+```{r}
+polMarried <- dat %>% select(Marital_Status, Political)
+
+polMarried <- count(polMarried, vars = c("Marital_Status", "Political"))
+polMarried <- polMarried[order(polMarried$freq), ]
+
+
+polMarried$polRank <- ifelse(polMarried$Political == "No answer", 0, ifelse(polMarried$Political == "Strong democrat", 1, ifelse(polMarried$Political == "Not str democrat", 2, ifelse(polMarried$Political == "Ind,near dem", 3, ifelse(polMarried$Political == "Independent", 4, ifelse(polMarried$Political == "Ind,near rep", 5, ifelse(polMarried$Political == "Not str republican", 6, ifelse(polMarried$Political == "Strong republican", 7, 8))))))))
+
+ggplot(data = polMarried, aes(x = reorder(paste0(Marital_Status,'-', Political), polRank), y = freq)) + geom_bar(stat = "identity") + xlab('Marital Status-Political Party') + ylab('Number of Answers') + labs(title = "Political party Based off of Marital Status") + theme(axis.text.x = element_text(angle = 90))
+```
+     
+     For this problem, I first selected only the Marital_Status and Political columns from the original dataset. I then used the count() function to get the number of times each unique marital status and political combination appeared. For displaying this information numerically, I sorted this dataframe by the frequency each combination appeared to see where the most politically related marital statuses are. This made me see that the political part is is related to marital status. We see that respondants tended to be married, and more closely identified with the democratic party than the republican party, with the most number of married respondants identifying as "not strong democratic."
+
+6. Explore two more interesting questions, and answer those questions using the GSS data.  
+    
+    "Comparing year with gender"
+```{r}    
+genyear<- dat %>% select(Year, Gender)   
+genyear <- count(genyear, vars = c("Year", "Gender"))
+genyear <- genyear[order(genyear$freq), ]
+genyear$Gender <- factor(genyear$Gender)
+
+str(genyear)
+    
+ggplot(data =genyear, aes(x = paste0(Year,'-', Gender), y = freq)) + geom_bar(stat = "identity") + xlab('Year and Gender') + ylab('Number of Answers') + labs(title = "Year Based on which Gender") + theme(axis.text.x = element_text(angle = 90))
+```
+
+     When looking at the graph, there tended to be more male respondants each year exepct for the first few years, regardless of the total number of respondants for that year. In fact, the number of women who responded decreases from 1972 until around 1990, while male respondants stays consistently. There was a jump in the number of respondants from 1993 to 1994.
+     
+     "Year with HS_Level"
+```{r}  
+eduyear <- aggregate(HS_Level ~ Year, dat, FUN = mean)
+str(eduyear)
+ggplot(data = eduyear, aes(x = Year, y = HS_Level)) + geom_point(stat = "identity") + xlab('Year') + ylab('Average Number of Years of Education') + labs(title = "Average Years of Education by Year") + theme(axis.text.x = element_text(angle = 90)) + geom_line()
+```
+
+     When looking at the graph, we see that as with each year, on average the level of education increases for the respondants.
