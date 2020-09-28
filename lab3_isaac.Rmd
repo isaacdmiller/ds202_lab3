@@ -53,12 +53,36 @@ happyMarried
 
 happyMarried$HappyRank <- ifelse(happyMarried$Happy == "No answer", 0, ifelse(happyMarried$Happy == "Not applicable", 1, ifelse(happyMarried$Happy == "Don't know", 2, ifelse(happyMarried$Happy == "Not too happy", 3, ifelse(happyMarried$Happy == "Pretty happy", 4, 5)))))
 
-ggplot(data = happyMarried, aes(x = reorder(paste0(Marital_Status,'-', Happy), HappyRank), y = freq)) + geom_bar(stat = "identity") + xlab('Political Party Affiliation') + ylab('Average Number of Years of Education') + labs(title = "Average Years of Education by Political Party") + theme(axis.text.x = element_text(angle = 90))
+ggplot(data = happyMarried, aes(x = reorder(paste0(Marital_Status,'-', Happy), HappyRank), y = freq)) + geom_bar(stat = "identity") + xlab('Marital Status-Happiness') + ylab('Number of Answers') + labs(title = "Happiness Level Based off of Marital Status") + theme(axis.text.x = element_text(angle = 90))
 ```
 
     For this problem, I first selected only the Marital_Status and Happy columns from the original dataset. I then used the count() function to get the number of times each unique marital status and happy combination appeared. For displaying this information numerically, I sorted this dataframe by the frequency each combination appeared to see where the happiest marital statuses are. This made me see that the happiness is related. As you can see, almost half of the respondents are the top two answers, which are both married and are either Very happy or Pretty happy. While other marital statuses do have people who are either Very happy or Pretty happy, it is clear that the most happy are the people who are married. In the graph (the labels for each tick are slightly to the right), you can see that for people who are married, there aren't many spikes in the "not happy" columns. In order to see this better, I gave each happiness a rank and then ordered them based on that.
 
+4. Does party affiliation affect the relationship you found in the last question?
 
+```{r}
+happyMarriedPol <- dat %>% select(Marital_Status, Happy, Political)
+
+happyMarriedPol <- count(happyMarriedPol, vars = c("Marital_Status", "Happy", "Political"))
+happyMarriedPol <- happyMarriedPol[order(happyMarriedPol$freq), ]
+
+happyMarriedPol$HappyRank <- ifelse(happyMarriedPol$Happy == "No answer", 0, ifelse(happyMarriedPol$Happy == "Not applicable", 1, ifelse(happyMarriedPol$Happy == "Don't know", 2, ifelse(happyMarriedPol$Happy == "Not too happy", 3, ifelse(happyMarriedPol$Happy == "Pretty happy", 4, 5)))))
+happyMarriedPol <- happyMarriedPol[order(happyMarriedPol$HappyRank), ]
+happyMarriedPol
+
+ggplot(happyMarriedPol, aes(fill = Happy, x = Marital_Status)) + geom_bar(position = 'fill') + facet_wrap('Political') + theme(axis.text.x = element_text(angle = 90))
+```
+
+    For this problem, I first selected only the Marital_Status, Happy, and Political columns from the original dataset. I then used the count() function to get the number of times each unique marital status, happy, and political party affiliation combination appeared. For displaying this information numerically, I sorted this dataframe by the happiness ranking for each combination appeared to see where the happiest marital statuses and political affiliations are. This made me see that the happiness and marital status and political affiliation are not related. As you can see, there is a very good mix of marital statuses, political affiliations, and happinesses in each happiness category. In the graph (the labels for each tick are slightly to the right), you can see that the distribution of the hapiness categories are pretty well spread out as well and are pretty even amongst different marital statuses.
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 
 
