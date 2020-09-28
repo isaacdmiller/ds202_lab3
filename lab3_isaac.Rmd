@@ -10,6 +10,7 @@ editor_options:
 library(ggplot2)
 
 library(dplyr)
+library(plyr)
 dat <- readxl::read_xls('./GSS.xls')
 str(dat)
 dat <- na.omit(dat)
@@ -44,11 +45,18 @@ higherEdu
 
 ```{r}
 happyMarried <- dat %>% select(Marital_Status, Happy)
-happyMarried <- happyMarried %>% group_by(Marital_Status, Happy)
+
+happyMarried <- count(happyMarried, vars = c("Marital_Status", "Happy"))
+happyMarried <- happyMarried[order(happyMarried$freq), ]
+
 happyMarried
+
+happyMarried$HappyRank <- ifelse(happyMarried$Happy == "No answer", 0, ifelse(happyMarried$Happy == "Not applicable", 1, ifelse(happyMarried$Happy == "Don't know", 2, ifelse(happyMarried$Happy == "Not too happy", 3, ifelse(happyMarried$Happy == "Pretty happy", 4, 5)))))
+
+ggplot(data = happyMarried, aes(x = reorder(paste0(Marital_Status,'-', Happy), HappyRank), y = freq)) + geom_bar(stat = "identity") + xlab('Political Party Affiliation') + ylab('Average Number of Years of Education') + labs(title = "Average Years of Education by Political Party") + theme(axis.text.x = element_text(angle = 90))
 ```
 
-
+    For this problem, I first selected only the Marital_Status and Happy columns from the original dataset. I then used the count() function to get the number of times each unique marital status and happy combination appeared. For displaying this information numerically, I sorted this dataframe by the frequency each combination appeared to see where the happiest marital statuses are. This made me see that the happiness is related. As you can see, almost half of the respondents are the top two answers, which are both married and are either Very happy or Pretty happy. While other marital statuses do have people who are either Very happy or Pretty happy, it is clear that the most happy are the people who are married. In the graph (the labels for each tick are slightly to the right), you can see that for people who are married, there aren't many spikes in the "not happy" columns. In order to see this better, I gave each happiness a rank and then ordered them based on that.
 
 
 
