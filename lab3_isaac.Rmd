@@ -68,7 +68,6 @@ happyMarriedPol <- happyMarriedPol[order(happyMarriedPol$freq), ]
 
 happyMarriedPol$HappyRank <- ifelse(happyMarriedPol$Happy == "No answer", 0, ifelse(happyMarriedPol$Happy == "Not applicable", 1, ifelse(happyMarriedPol$Happy == "Don't know", 2, ifelse(happyMarriedPol$Happy == "Not too happy", 3, ifelse(happyMarriedPol$Happy == "Pretty happy", 4, 5)))))
 happyMarriedPol <- happyMarriedPol[order(happyMarriedPol$HappyRank), ]
-happyMarriedPol
 
 ggplot(happyMarriedPol, aes(fill = Happy, x = Marital_Status)) + geom_bar(position = 'fill') + facet_wrap('Political') + theme(axis.text.x = element_text(angle = 90))
 ```
@@ -82,7 +81,6 @@ polMarried <- dat %>% select(Marital_Status, Political)
 polMarried <- count(polMarried, vars = c("Marital_Status", "Political"))
 polMarried <- polMarried[order(polMarried$freq), ]
 
-unique(polMarried)
 
 polMarried$polRank <- ifelse(polMarried$Political == "No answer", 0, ifelse(polMarried$Political == "Strong democrat", 1, ifelse(polMarried$Political == "Not str democrat", 2, ifelse(polMarried$Political == "Ind,near dem", 3, ifelse(polMarried$Political == "Independent", 4, ifelse(polMarried$Political == "Ind,near rep", 5, ifelse(polMarried$Political == "Not str republican", 6, ifelse(polMarried$Political == "Strong republican", 7, 8))))))))
 
@@ -93,18 +91,25 @@ ggplot(data = polMarried, aes(x = reorder(paste0(Marital_Status,'-', Political),
 
 6. Explore two more interesting questions, and answer those questions using the GSS data.  
     
+    "Comparing year with gender"
+```{r}    
+genyear<- dat %>% select(Year, Gender)   
+genyear <- count(genyear, vars = c("Year", "Gender"))
+genyear <- genyear[order(genyear$freq), ]
+genyear$Gender <- factor(genyear$Gender)
+
+str(genyear)
     
-    
-    
-    
-    
-    
+ggplot(data =genyear, aes(x = paste0(Year,'-', Gender), y = freq)) + geom_bar(stat = "identity") + xlab('Year and Gender') + ylab('Number of Answers') + labs(title = "Year Based on which Gender") + theme(axis.text.x = element_text(angle = 90))
+```
 
+     When looking at the graph, there tended to be more male respondants each year exepct for the first few years, regardless of the total number of respondants for that year. In fact, the number of women who responded decreases from 1972 until around 1990, while male respondants stays consistently. There was a jump in the number of respondants from 1993 to 1994.
+     
+     "Year with HS_Level"
+```{r}  
+eduyear <- aggregate(HS_Level ~ Year, dat, FUN = mean)
+str(eduyear)
+ggplot(data = eduyear, aes(x = Year, y = HS_Level)) + geom_point(stat = "identity") + xlab('Year') + ylab('Average Number of Years of Education') + labs(title = "Average Years of Education by Year") + theme(axis.text.x = element_text(angle = 90)) + geom_line()
+```
 
-
-
-
-
-
-
-
+     When looking at the graph, we see that as with each year, on average the level of education increases for the respondants.
