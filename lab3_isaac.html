@@ -384,8 +384,7 @@ ggplot(data = eduParty, aes(x = reorder(Political, Rank), y = Avg_Edu)) + geom_b
 <ol start="2" style="list-style-type: decimal">
 <li>Create a single data frame containing records for the better educated respondents in each political party affiliation. A “better educated” respondent is someone who has strictly more years of education than the median in the same party affiliation. Print the structure of the data frame.</li>
 </ol>
-<pre class="r"><code>higherEdu &lt;- dat
-higherEdu &lt;- higherEdu %&gt;% left_join(eduParty, by = &quot;Political&quot;) %&gt;% filter(HS_Level &gt; Avg_Edu)
+<pre class="r"><code>higherEdu &lt;- dat %&gt;% left_join(eduParty, by = &quot;Political&quot;) %&gt;% filter(HS_Level &gt; Avg_Edu)
 higherEdu</code></pre>
 <pre><code>## # A tibble: 27,842 x 10
 ##     Year    ID Marital_Status HS_Level Gender Political Happy Ballot_Used
@@ -401,6 +400,27 @@ higherEdu</code></pre>
 ##  9  1972    20 Never married        14 Female Ind,near~ Very~ Not applic~
 ## 10  1972    25 Married              16 Female Strong r~ Pret~ Not applic~
 ## # ... with 27,832 more rows, and 2 more variables: Avg_Edu &lt;dbl&gt;, Rank &lt;dbl&gt;</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>How is the happiness of a respondent related to his/her marriage status? Define that a person is happy if the response to question is “Very happy” or “Pretty happy”.</li>
+</ol>
+<pre class="r"><code>happyMarried &lt;- dat %&gt;% select(Marital_Status, Happy)
+happyMarried &lt;- happyMarried %&gt;% group_by(Marital_Status, Happy)
+happyMarried</code></pre>
+<pre><code>## # A tibble: 64,814 x 2
+## # Groups:   Marital_Status, Happy [36]
+##    Marital_Status Happy        
+##    &lt;chr&gt;          &lt;chr&gt;        
+##  1 Never married  Not too happy
+##  2 Married        Not too happy
+##  3 Married        Pretty happy 
+##  4 Married        Not too happy
+##  5 Married        Pretty happy 
+##  6 Never married  Pretty happy 
+##  7 Divorced       Not too happy
+##  8 Never married  Not too happy
+##  9 Never married  Pretty happy 
+## 10 Married        Pretty happy 
+## # ... with 64,804 more rows</code></pre>
 
 
 

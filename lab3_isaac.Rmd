@@ -36,12 +36,17 @@ ggplot(data = eduParty, aes(x = reorder(Political, Rank), y = Avg_Edu)) + geom_b
 2. Create a single data frame containing records for the better educated respondents in each political party affiliation. A “better educated” respondent is someone who has strictly more years of education than the median in the same party affiliation. Print the structure of the data frame.
 
 ```{r}
-higherEdu <- dat
-higherEdu <- higherEdu %>% left_join(eduParty, by = "Political") %>% filter(HS_Level > Avg_Edu)
+higherEdu <- dat %>% left_join(eduParty, by = "Political") %>% filter(HS_Level > Avg_Edu)
 higherEdu
 ```
 
+3. How is the happiness of a respondent related to his/her marriage status? Define that a person is happy if the response to question is “Very happy” or “Pretty happy”.
 
+```{r}
+happyMarried <- dat %>% select(Marital_Status, Happy)
+happyMarried <- happyMarried %>% group_by(Marital_Status, Happy)
+happyMarried
+```
 
 
 
