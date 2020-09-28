@@ -49,7 +49,7 @@ happyMarried <- dat %>% select(Marital_Status, Happy)
 happyMarried <- count(happyMarried, vars = c("Marital_Status", "Happy"))
 happyMarried <- happyMarried[order(happyMarried$freq), ]
 
-happyMarried
+head(happyMarried)
 
 happyMarried$HappyRank <- ifelse(happyMarried$Happy == "No answer", 0, ifelse(happyMarried$Happy == "Not applicable", 1, ifelse(happyMarried$Happy == "Don't know", 2, ifelse(happyMarried$Happy == "Not too happy", 3, ifelse(happyMarried$Happy == "Pretty happy", 4, 5)))))
 
@@ -75,7 +75,23 @@ ggplot(happyMarriedPol, aes(fill = Happy, x = Marital_Status)) + geom_bar(positi
 
     For this problem, I first selected only the Marital_Status, Happy, and Political columns from the original dataset. I then used the count() function to get the number of times each unique marital status, happy, and political party affiliation combination appeared. For displaying this information numerically, I sorted this dataframe by the happiness ranking for each combination appeared to see where the happiest marital statuses and political affiliations are. This made me see that the happiness and marital status and political affiliation are not related. As you can see, there is a very good mix of marital statuses, political affiliations, and happinesses in each happiness category. In the graph (the labels for each tick are slightly to the right), you can see that the distribution of the hapiness categories are pretty well spread out as well and are pretty even amongst different marital statuses.
     
-    
+5. How is marital status related to the education of a respondent? What are possible reasons accounting for the patterns you see?
+```{r}
+polMarried <- dat %>% select(Marital_Status, Political)
+
+polMarried <- count(polMarried, vars = c("Marital_Status", "Political"))
+polMarried <- polMarried[order(polMarried$freq), ]
+
+unique(polMarried)
+
+polMarried$polRank <- ifelse(polMarried$Political == "No answer", 0, ifelse(polMarried$Political == "Strong democrat", 1, ifelse(polMarried$Political == "Not str democrat", 2, ifelse(polMarried$Political == "Ind,near dem", 3, ifelse(polMarried$Political == "Independent", 4, ifelse(polMarried$Political == "Ind,near rep", 5, ifelse(polMarried$Political == "Not str republican", 6, ifelse(polMarried$Political == "Strong republican", 7, 8))))))))
+
+ggplot(data = polMarried, aes(x = reorder(paste0(Marital_Status,'-', Political), polRank), y = freq)) + geom_bar(stat = "identity") + xlab('Marital Status-Political Party') + ylab('Number of Answers') + labs(title = "Political party Based off of Marital Status") + theme(axis.text.x = element_text(angle = 90))
+```
+     
+     For this problem, I first selected only the Marital_Status and Political columns from the original dataset. I then used the count() function to get the number of times each unique marital status and political combination appeared. For displaying this information numerically, I sorted this dataframe by the frequency each combination appeared to see where the most politically related marital statuses are. This made me see that the political part is is related to marital status. We see that respondants tended to be married, and more closely identified with the democratic party than the republican party, with the most number of married respondants identifying as "not strong democratic."
+
+6. Explore two more interesting questions, and answer those questions using the GSS data.  
     
     
     
